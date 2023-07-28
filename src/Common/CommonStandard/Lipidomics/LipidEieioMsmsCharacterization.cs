@@ -1563,6 +1563,69 @@ namespace CompMs.Common.Lipidomics
             }
             return null;
         }
+        public static LipidMolecule JudgeIfHemiismonoacylglycerophosphate(IMSScanProperty msScanProp, double ms2Tolerance,
+           double theoreticalMz, int totalCarbon, int totalDoubleBond, // If the candidate PS 46:6, totalCarbon = 46 and totalDoubleBond = 6
+           int sn1Carbon, int sn2Carbon, int sn1Double, int sn2Double,
+           AdductIon adduct)
+        {
+            var spectrum = msScanProp.Spectrum;
+            if (spectrum == null || spectrum.Count == 0) return null;
+            if (adduct.IonMode == IonMode.Positive)
+            { // positive ion mode 
+                if (adduct.AdductIonName == "[M+NH4]+")
+                {
+                    // from here, acyl level annotation is executed.
+                    var candidates = new List<LipidMolecule>();
+
+                    var sn3Carbon = totalCarbon - sn1Carbon - sn2Carbon;
+                    var sn3Double = totalDoubleBond - sn1Double - sn2Double;
+
+                    var sn1 = (MassDiffDictionary.CarbonMass * sn1Carbon)
+                            + (MassDiffDictionary.HydrogenMass * ((sn1Carbon * 2) - (sn1Double * 2))) + MassDiffDictionary.OxygenMass;
+                    var sn2 = (MassDiffDictionary.CarbonMass * sn2Carbon)
+                            + (MassDiffDictionary.HydrogenMass * ((sn2Carbon * 2) - (sn2Double * 2))) + MassDiffDictionary.OxygenMass;
+                    var sn3 = (MassDiffDictionary.CarbonMass * sn3Carbon)
+                            + (MassDiffDictionary.HydrogenMass * ((sn3Carbon * 2) - (sn3Double * 2))) + MassDiffDictionary.OxygenMass;
+
+                    var SN1Gly = sn1 + 73.028416;//[SN1+C3H4O2+H]+
+                    var SN2Gly = sn2 + 73.028416;//[SN2+C3H4O2+H]+
+                    var SN3Gly = sn3 + 73.028416;//[SN3+C3H4O2+H]+
+
+                    var query = new List<SpectrumPeak> {
+                                        new SpectrumPeak() { Mass = SN1Gly, Intensity = 1.0 },
+                                        new SpectrumPeak() { Mass = SN2Gly, Intensity = 1.0 },
+                                        new SpectrumPeak() { Mass = SN3Gly, Intensity = 1.0 },
+                                    };
+
+                    var foundCount = 0;
+                    var averageIntensity = 0.0;
+                    LipidMsmsCharacterizationUtility.countFragmentExistence(spectrum, query, ms2Tolerance, out foundCount, out averageIntensity);
+
+                    if (foundCount == 3)
+                    {
+                        var NL_SN3PA = theoreticalMz - 17.026549 - SN1Gly - 97.976897 + MassDiffDictionary.HydrogenMass; // [M-(sn3+C3H4O2+H)-H3PO4+H]+
+                        var threshold = 5;
+                        var isClassIonFound = LipidMsmsCharacterizationUtility.isDiagnosticFragmentExist(spectrum, ms2Tolerance, NL_SN3PA, threshold);
+                        if (isClassIonFound == true)
+                        {
+                            var molecule = LipidMsmsCharacterizationUtility.getAcylglycerolMoleculeObjAsLevel2("HBMP", LbmClass.HBMP, sn1Carbon, sn1Double,
+                                 sn2Carbon, sn2Double, sn3Carbon, sn3Double, averageIntensity);
+                            candidates.Add(molecule);
+                        }
+                        else
+                        {
+                            var molecule = LipidMsmsCharacterizationUtility.getTriacylglycerolMoleculeObjAsLevel2("HBMP", LbmClass.HBMP, sn1Carbon, sn1Double,
+                                sn2Carbon, sn2Double, sn3Carbon, sn3Double, averageIntensity);
+                            candidates.Add(molecule);
+                        }
+                    }
+                    if (candidates.Count == 0) return null;
+                    return LipidMsmsCharacterizationUtility.returnAnnotationResult("HBMP", LbmClass.HBMP, "", theoreticalMz, adduct,
+                        totalCarbon, totalDoubleBond, 0, candidates, 3);
+                }
+            }
+            return null;
+        }
 
         public static LipidMolecule JudgeIfPhosphatidylcholineD5(IMSScanProperty msScanProp, double ms2Tolerance,
             double theoreticalMz, int totalCarbon, int totalDoubleBond, // If the candidate PC 46:6, totalCarbon = 46 and totalDoubleBond = 6
