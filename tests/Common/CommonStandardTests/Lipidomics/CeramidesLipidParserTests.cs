@@ -27,6 +27,10 @@ namespace CompMs.Common.Lipidomics.Tests
             Assert.AreEqual(744.57814, lipid.Mass, 0.01);
             Assert.AreEqual(LbmClass.SM, lipid.LipidClass);
 
+            lipid = parser.Parse("SM 18:1;1OH,3OH/18:1;O");
+            Assert.AreEqual(744.57814, lipid.Mass, 0.01);
+            Assert.AreEqual(LbmClass.SM, lipid.LipidClass);
+
             lipid = parser.Parse("SM 36:1;O5"); 
             Assert.AreEqual(778.58362, lipid.Mass, 0.01);
             Assert.AreEqual(LbmClass.SM, lipid.LipidClass);
@@ -80,12 +84,20 @@ namespace CompMs.Common.Lipidomics.Tests
             lipid = parser.Parse("Cer 18:0(1OH,3OH,4OH)/24:0"); // O=C(NC(CO)C(O)C(O)CCCCCCCCCCCCCC)CCCCCCCCCCCCCCCCCCCCCCC
             Assert.AreEqual(667.6478602, lipid.Mass, 0.01);
             Assert.AreEqual(LbmClass.Cer_NP, lipid.LipidClass);
+
+            lipid = parser.Parse("Cer 18:0;1OH,3OH,4OH/24:0"); // O=C(NC(CO)C(O)C(O)CCCCCCCCCCCCCC)CCCCCCCCCCCCCCCCCCCCCCC
+            Assert.AreEqual(667.6478602, lipid.Mass, 0.01);
+            Assert.AreEqual(LbmClass.Cer_NP, lipid.LipidClass);
         }
         [TestMethod()]
         public void CerASParseTest()
         {
             var parser = new CeramideLipidParser();
             var lipid = parser.Parse("Cer 18:1;O2/24:0(2OH)"); // O=C(NC(CO)C(O)C=CCCCCCCCCCCCCC)C(O)CCCCCCCCCCCCCCCCCCCCCC
+            Assert.AreEqual(665.6322102, lipid.Mass, 0.01);
+            Assert.AreEqual(LbmClass.Cer_AS, lipid.LipidClass);
+
+            lipid = parser.Parse("Cer 18:1;O2/24:0;2OH"); // O=C(NC(CO)C(O)C=CCCCCCCCCCCCCC)C(O)CCCCCCCCCCCCCCCCCCCCCC
             Assert.AreEqual(665.6322102, lipid.Mass, 0.01);
             Assert.AreEqual(LbmClass.Cer_AS, lipid.LipidClass);
         }
@@ -134,6 +146,10 @@ namespace CompMs.Common.Lipidomics.Tests
             Assert.AreEqual(LbmClass.Cer_HS, lipid.LipidClass);
 
             lipid = parser.Parse("Cer 18:1(4);O2/24:0(24OH)"); // 
+            Assert.AreEqual(665.6322102, lipid.Mass, 0.01);
+            Assert.AreEqual(LbmClass.Cer_HS, lipid.LipidClass);
+
+            lipid = parser.Parse("Cer 18:1(4);1OH,3OH/24:0;24OH"); // 
             Assert.AreEqual(665.6322102, lipid.Mass, 0.01);
             Assert.AreEqual(LbmClass.Cer_HS, lipid.LipidClass);
 

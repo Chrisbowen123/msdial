@@ -39,7 +39,7 @@ namespace CompMs.Common.Lipidomics.Tests
             Assert.AreEqual(2, chain.DoubleBondCount);
             Assert.AreEqual(1, chain.OxidizedCount);
             Assert.AreEqual(279.23240438537, chain.Mass, 0.00001); // C18H31O2
-            Assert.AreEqual("18:2(2OH)", chain.ToString());
+            Assert.AreEqual("18:2;2OH", chain.ToString());
 
         }
 

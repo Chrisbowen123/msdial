@@ -21,9 +21,9 @@ namespace CompMs.Common.Lipidomics.Tests
             yield return new object[] { new Oxidized(0), 0, 0, 0, "", };
             yield return new object[] { new Oxidized(1), 1, 0, 1, ";O", };
             yield return new object[] { new Oxidized(2), 2, 0, 2, ";O2", };
-            yield return new object[] { new Oxidized(2, 1, 3), 2, 2, 0, "(1OH,3OH)", };
+            yield return new object[] { new Oxidized(2, 1, 3), 2, 2, 0, ";1OH,3OH", };
 
-            yield return new object[] { Oxidized.CreateFromPosition(1, 3), 2, 2, 0, "(1OH,3OH)", };
+            yield return new object[] { Oxidized.CreateFromPosition(1, 3), 2, 2, 0, ";1OH,3OH", };
         }
 
         [TestMethod()]

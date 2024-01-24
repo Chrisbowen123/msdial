@@ -15,7 +15,9 @@ namespace CompMs.Common.Lipidomics.Tests
             var lipid = parser.Parse("HexCer 18:2;O3/26:0(2OH)"); 
             Assert.AreEqual(869.6955983, lipid.Mass, 0.01);
             Assert.AreEqual(LbmClass.HexCer_AP, lipid.LipidClass);
-
+            lipid = parser.Parse("HexCer 18:2;1OH,3OH,4OH/26:0;2OH");
+            Assert.AreEqual(869.6955983, lipid.Mass, 0.01);
+            Assert.AreEqual(LbmClass.HexCer_AP, lipid.LipidClass);
             //HexCer_HS
             lipid = parser.Parse("HexCer 18:2;O2/26:0;O2");
             Assert.AreEqual(869.6955983, lipid.Mass, 0.01);
