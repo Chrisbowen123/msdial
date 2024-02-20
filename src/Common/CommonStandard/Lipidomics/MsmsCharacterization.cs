@@ -722,7 +722,7 @@ namespace CompMs.Common.Lipidomics
             var acylChainString = acylCarbon + ":" + acylDouble + ";O";
             if (lbmClass == LbmClass.Cer_EBDS)
             {
-                acylChainString = acylCarbon + ":" + acylDouble + "(3OH)";
+                acylChainString = acylCarbon + ":" + acylDouble + ";3OH";
             }
             var esterChainString = "(FA " + esterCarbon + ":" + esterDouble + ")";
 
@@ -1639,11 +1639,18 @@ namespace CompMs.Common.Lipidomics
             var lbmClassString = lbmClass.ToString();
             if (lbmClassString.Contains("_A"))
             {
-                acylHydroxyString = "(2OH)";
+                if (lbmClassString.Contains("_AB"))
+                {
+                    acylHydroxyString = ";2OH,3OH";
+                }
+                else
+                {
+                    acylHydroxyString = ";2OH";
+                }
             }
             else if (lbmClassString.Contains("_B") || lbmClassString.Contains("_EB"))
             {
-                acylHydroxyString = "(3OH)";
+                acylHydroxyString = ";3OH";
 
             }
 
@@ -1685,7 +1692,7 @@ namespace CompMs.Common.Lipidomics
         public static LipidMolecule getAlphaOxfaMoleculeObjAsLevel1(string lipidClass, LbmClass lbmClass,
             int totalCarbon, int totalDB, int totalOxidized, double score)
         {
-            var totalString = totalCarbon + ":" + totalDB + "(2OH)";
+            var totalString = totalCarbon + ":" + totalDB + ";2OH";
             var totalName = lipidClass + " " + totalString;
 
             return new LipidMolecule()
