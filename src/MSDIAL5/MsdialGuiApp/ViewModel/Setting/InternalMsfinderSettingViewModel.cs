@@ -1,4 +1,4 @@
-﻿using CompMs.App.Msdial.Model.Search;
+﻿using CompMs.App.Msdial.Model.DataObj;
 using CompMs.App.Msdial.Model.Setting;
 using CompMs.App.Msdial.ViewModel.Search;
 using CompMs.Common.Enum;
@@ -15,9 +15,7 @@ namespace CompMs.App.Msdial.ViewModel.Setting
 {
     internal sealed class InternalMsfinderSettingViewModel : ViewModelBase
     {
-
-        public InternalMsfinderSettingViewModel(InternalMsfinderSettingModel model, IMessageBroker broker) {
-
+        public InternalMsfinderSettingViewModel(MsfinderParameterSetting model, IMessageBroker broker) {
             MassTolType = model.ToReactivePropertySlimAsSynchronized(m => m.MassTolType).AddTo(Disposables);
 
             Mass1Tolerance = model.ToReactivePropertyAsSynchronized(
@@ -475,18 +473,8 @@ namespace CompMs.App.Msdial.ViewModel.Setting
                 invalidUserDefinedProjectFolderName,
             }.CombineLatestValuesAreAllTrue();
 
-            Run = new[] {
-                model.CurrentAlignmentModel.Select(f => f is not null),
-                loadProjectAndFolderDoesNotExists.Inverse(),
-                createNewFolderAndInvalidFolderName.Inverse(),
-            }.CombineLatestValuesAreAllTrue() // Commandが実行できる条件
-            .ToReactiveCommand().WithSubscribe(() =>
-            {
-                var msfinder = model.Process();
-                if (msfinder is not null)
-                {
-                    broker.Publish(InternalMsFinderViewModel = new InternalMsFinderViewModel(msfinder, broker));
-                }
+            Save = new ReactiveCommand().WithSubscribe(() => {
+                model.Commit();
             }).AddTo(Disposables);
 
             Cancel = new ReactiveCommand().WithSubscribe(() => {
@@ -765,7 +753,7 @@ namespace CompMs.App.Msdial.ViewModel.Setting
 
         public ReactiveCommand OpenSetAdductTypeWindow { get; }
 
-        public ReactiveCommand Run { get; }
+        public ReactiveCommand Save { get; }
 
         public ReactiveCommand Cancel { get; }
 

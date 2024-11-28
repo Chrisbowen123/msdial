@@ -1,11 +1,13 @@
 ﻿using CompMs.App.Msdial.Model.Dims;
 using CompMs.App.Msdial.Model.Export;
+using CompMs.App.Msdial.Model.Setting;
 using CompMs.App.Msdial.Utility;
 using CompMs.App.Msdial.ViewModel.Core;
 using CompMs.App.Msdial.ViewModel.DataObj;
 using CompMs.App.Msdial.ViewModel.Export;
 using CompMs.App.Msdial.ViewModel.Search;
 using CompMs.App.Msdial.ViewModel.Service;
+using CompMs.App.Msdial.ViewModel.Setting;
 using CompMs.App.Msdial.ViewModel.Table;
 using CompMs.Common.Enum;
 using CompMs.CommonMVVM;
@@ -25,6 +27,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace CompMs.App.Msdial.ViewModel.Dims
 {
@@ -49,6 +52,10 @@ namespace CompMs.App.Msdial.ViewModel.Dims
 
             PeakFilterViewModel = new PeakFilterViewModel(model.PeakFilterModel).AddTo(Disposables);
             ExportParameterCommand = new AsyncReactiveCommand().WithSubscribe(model.ParameterExportModel.ExportAsync).AddTo(Disposables);
+
+            InternalMsfinderSettingViewModel = new InternalMsfinderSettingViewModel(model.MsfinderParameterSetting, broker).AddTo(Disposables);
+            ShowMsfinderSettingViewCommand = new ReactiveCommand().WithSubscribe(() => _broker.Publish(InternalMsfinderSettingViewModel)).AddTo(Disposables);
+            InternalMsfinderSettingModel = model.InternalMsfinderSettingModel;
         }
 
         public PeakFilterViewModel PeakFilterViewModel { get; }
@@ -194,6 +201,22 @@ namespace CompMs.App.Msdial.ViewModel.Dims
             var ms2chrom = analysisAsObservable.Select(vm => vm?.Ms2ChromatogramsViewModel);
             var repref = alignmentAsObservable.Select(vm => vm?.Ms2SpectrumViewModel);
             return new ViewModelSwitcher(rawdec, repref, new IObservable<ViewModelBase?>[] { rawdec, ms2chrom, rawpur, repref});
+        }
+
+        public InternalMsfinderSettingViewModel InternalMsfinderSettingViewModel { get; }
+
+        public ReactiveCommand ShowMsfinderSettingViewCommand { get; }
+        private InternalMsfinderSettingModel InternalMsfinderSettingModel { get; }
+        public DelegateCommand GoToMsfinderBatchCommand => _goToMsfinderBatchCommand ??= new DelegateCommand(GoToMsfinderBatchProcess);
+        private DelegateCommand _goToMsfinderBatchCommand;
+
+        private void GoToMsfinderBatchProcess() {
+            var msfinder = InternalMsfinderSettingModel.Process();
+            if (msfinder is null) {
+                MessageBox.Show("Please select alignment result from alignment navigator to run MS-FINDER batch processing.");
+            } else {
+                _broker.Publish(new InternalMsFinderViewModel(msfinder, _broker));
+            }
         }
     }
 }
